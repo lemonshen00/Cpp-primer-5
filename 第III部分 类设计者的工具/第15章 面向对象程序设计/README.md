@@ -13,6 +13,7 @@
 // 书店中的书籍有不同的定价策略，Quote表示基类
 // isbn（），返回书籍中的ISBN编号。该操作不涉及派生类的特殊性，因此只定义在Quote类中
 // net_price（size_t），返回书籍的实际价格，前提是用户购买该书的数量达到一定标准。这个操作是类型相关的，因此基类/派生类都应该包含该函数。
+// 类声明
 class Quote
 {
 public:
@@ -37,7 +38,9 @@ public:
 };
 ```
 
-派生类必须在其内部对所有重新定义的虚函数进行声明（即明确的指出重新实现某个虚函数，方法：声明时，在函数尾部写关键字：`override`，即覆盖）。
+派生类必须在其内部对所有重新定义的虚函数进行声明（即明确的指出重新实现某个虚函数，方法：声明时，在函数尾部写关键字：`override`，即覆盖，同时virtual 和 override在函数中的位置，一前一后）。
+
+派生类不一定要重新实现virtual函数，也可以直接使用基类中的virtual函数；派生类一定要实现基类中的纯虚函数，因为基类中没有实现
 
 使用基类的`引用或指针`调用一个虚函数时将发生动态绑定（dynamic binding），也叫运行时绑定（run-time binding）。函数的运行版本将由实参决定。
 
@@ -47,23 +50,44 @@ double price = item.net_price(n);
 
 // 调用
 print_price(cout, basic, 10); // 传入基类Quote，调用基类中的net_price
-print_price(cout, bult, 20);  // 传入派生类Bulk_quote，调用派生类中的net_price
+print_price(cout, bulk, 20);  // 传入派生类Bulk_quote，调用派生类中的net_price
 }
 ```
 
-## 定义基类和派生类（Defining Base and Derived Classes）
+## 15.2 定义基类和派生类（Defining Base and Derived Classes）
 
-### 定义基类（Defining a Base Class）
+### 15.1 定义基类（Defining a Base Class）
 
-基类通常都应该定义一个虚析构函数，即使该函数不执行任何实际操作也是如此。
+```C++
+// 类定义
+class Quote
+{
+public:
+    Quote() = default; //默认构造函数？
+    Quote(const std::string &book, double price) : bookNo(book), price(price) {}
+    std::string isbn() const {return bookNo} 
+    virtual double net_price(std::size_t n) const {return n * price;} 
+    virtual ~Quote() = default; // virtual 对析构函数进行动态绑定
+private:
+    std::string bookNo;
+protected:
+    double price;
+};
+```
+
+基类通常都应该定义一个`虚析构函数`，即使该函数不执行任何实际操作也是如此。
+
+#### 成员函数与继承
 
 除构造函数之外的任何非静态函数都能定义为虚函数。`virtual`关键字只能出现在类内部的声明语句之前而不能用于类外部的函数定义。如果基类把一个函数声明为虚函数，则该函数在派生类中隐式地也是虚函数。
 
 成员函数如果没有被声明为虚函数，则其解析过程发生在编译阶段而非运行阶段。
 
+#### 访问控制与继承
+
 派生类能访问基类的公有成员，不能访问私有成员。如果基类希望定义外部代码无法访问，但是派生类对象可以访问的成员，可以使用受保护的（protected）访问运算符进行说明。
 
-### 定义派生类（Defining a Derived Class）
+### 15.2.2 定义派生类（Defining a Derived Class）
 
 类派生列表中的访问说明符用于控制派生类从基类继承而来的成员是否对派生类的用户可见。
 
